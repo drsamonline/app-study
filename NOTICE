@@ -1,0 +1,28 @@
+NOTICE
+======
+
+Study — https://github.com/drsamonline/app-study
+Copyright 2026 Dr Sohil Momin. Licensed under PolyForm Noncommercial 1.0.0 (see LICENSE).
+
+Third-party components
+----------------------
+
+None from outside this project. Study has no third-party dependency and no CDN.
+
+Vendored from this project's own kits (same licence, same author), copied verbatim on
+25/11/2026:
+
+- web-kit 0.1.0 — docs/play/web-kit.js — the offline shell, storage helpers and PWA registration
+- export-kit 1.0.0 — docs/play/export-kit.js — Blob download, used to write the deck exports
+- srs-kit 0.2.0 — docs/play/srs-kit.js — SM-2 spaced repetition. This is the scheduler: the app
+  does not reimplement it, and tests assert that the kit is the thing doing the scheduling.
+
+None of the three is modified. None makes a network request.
+
+On OCR
+------
+
+The Codex prompt asks for on-device OCR of handwritten notes. There is no OCR component in
+this estate, so Study does not ship one, does not claim one, and says so on the page: the notes
+are pasted or typed. Everything downstream of the text — cards, gaps, the schedule, the tutor —
+works exactly as specified.

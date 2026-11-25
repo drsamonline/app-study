@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study — a page of notes into active recall</title>
+<meta name="description" content="Paste a page of notes, get cards whose answers are pieces of that page, and a real SM-2 schedule that brings a card back sooner when you forget it. Plus a tutor that asks about your notes and never gives the answer.">
+<meta name="theme-color" content="#101418">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  :root{--bg:#f6f5f2;--panel:#fff;--ink:#14181d;--muted:#5d666f;--line:#d9d6cf;--accent:#2f4a7a;--accent-ink:#fff;
+        --again:#a02a2a;--hard:#8a5a00;--good:#2f4a7a;--easy:#1f5f4f;
+        --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+        --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;font-size:16px}
+  header.top{border-bottom:1px solid var(--line);background:var(--panel);padding:14px 20px;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+  header.top h1{font-size:18px;margin:0;letter-spacing:-.01em}
+  header.top p{margin:0;color:var(--muted);font-size:13px}
+  header.top a{margin-left:auto;color:var(--accent);font-size:13px;text-decoration:none;border-bottom:1px solid currentColor}
+  main{max-width:1040px;margin:0 auto;padding:20px}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .tab{font:inherit;font-size:14px;padding:9px 14px;border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);cursor:pointer;border-radius:8px 8px 0 0}
+  .tab[aria-selected="true"]{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600;margin-bottom:-1px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+  .card h2{font-size:15px;margin:0 0 6px}
+  .card p.claim{margin:0 0 8px;color:var(--muted);font-size:13px}
+  label.fld{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.06em}
+  textarea,input[type=text]{font:inherit;font-size:14px;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;color:inherit}
+  textarea{font-family:var(--mono);font-size:13px;line-height:1.6;resize:vertical}
+  button{font:inherit;font-size:13px;padding:8px 13px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+  button.again{border-color:var(--again);color:var(--again)}
+  button.hard{border-color:var(--hard);color:var(--hard)}
+  button.good{border-color:var(--good);color:var(--good)}
+  button.easy{border-color:var(--easy);color:var(--easy)}
+  button.small{padding:3px 8px;font-size:12px}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+  .bar .grow{flex:1}
+  .hint{color:var(--muted);font-size:12px}
+  .status{margin:10px 0;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);font-size:13px;display:none}
+  .status.show{display:block}
+  .status.bad{border-color:#e3b7b7;background:#fdf3f3;color:#7d1f1f}
+  .status.ok{border-color:#b7d8cd;background:#f2f9f6;color:#14503f}
+  .status.warn{border-color:#e8d5ae;background:#fdf8ee;color:#6b4700}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 12px;min-width:88px}
+  .stat b{display:block;font-size:19px;font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .qcard{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:9px;padding:14px;background:#fbfaf8;font-size:17px}
+  .answer{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:9px;background:#f2f9f6;font-size:15px}
+  .answer .src{display:block;margin-top:8px;font-size:12px;color:var(--muted);font-family:var(--mono)}
+  .gap{font-size:13px;color:var(--muted);margin-top:8px}
+  .gap b{color:var(--ink)}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}
+  th,td{text-align:left;border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .turn{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin:8px 0;font-size:14px;background:#fbfaf8}
+  .turn.you{border-left:4px solid var(--muted)}
+  .turn.app{border-left:4px solid var(--accent)}
+  .turn .who{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:3px}
+  .empty{text-align:center;color:var(--muted);padding:22px 14px;font-size:14px}
+  footer{max-width:1040px;margin:0 auto;padding:22px 20px 40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+  [hidden]{display:none !important}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Study</h1>
+  <p>A page of notes into active recall: cards whose answers are pieces of the page, a real SM-2 schedule, and a tutor that never tells you the answer.</p>
+  <a href="../index.html">about</a>
+</header>
+
+<main>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-cards" aria-selected="true" aria-controls="panel-cards">Cards</button>
+    <button class="tab" role="tab" id="tab-tutor" aria-selected="false" aria-controls="panel-tutor">Tutor</button>
+  </div>
+
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+
+  <!-- ------------------------------------------------------- cards -->
+  <div id="panel-cards" role="tabpanel" aria-labelledby="tab-cards">
+    <section class="card">
+      <h2>The page</h2>
+      <p class="claim">Paste or type the notes. There is no camera in this app: reading a photograph needs an OCR model that
+        does not exist here, and it is not pretended otherwise. Every card's answer will be a piece of what you paste.</p>
+      <textarea id="pageText" rows="7" spellcheck="false" placeholder="Respiration&#10;Respiration is the process by which cells release energy from glucose. Mitochondria are the organelles where respiration happens. ..."></textarea>
+      <div class="bar">
+        <button class="primary" type="button" id="build">Build cards</button>
+        <button type="button" id="example">Load example</button>
+        <button type="button" id="exportJson">Export deck (.json)</button>
+        <button type="button" id="exportMd">Export deck (.md)</button>
+        <span class="grow"></span>
+        <span class="hint" id="deckNote"></span>
+      </div>
+      <div class="bar">
+        <label class="hint" for="importFile">Import a deck (.json) — review dates are kept:</label>
+        <input class="sr" type="file" id="importFile" accept=".json,application/json">
+        <label class="hint" for="importFile" style="border:1px solid var(--line);border-radius:7px;padding:4px 9px;cursor:pointer">choose a file</label>
+      </div>
+      <div class="gap" id="gapOut"></div>
+    </section>
+
+    <div class="stats" id="stats" hidden>
+      <div class="stat"><b id="sTotal">0</b><span>Cards</span></div>
+      <div class="stat"><b id="sDue">0</b><span>Due now</span></div>
+      <div class="stat"><b id="sTopics">0</b><span>Topics</span></div>
+      <div class="stat"><b id="sKit">—</b><span>Scheduler</span></div>
+    </div>
+
+    <section class="card" id="reviewCard" hidden>
+      <h2>Review</h2>
+      <div class="qcard" id="qText"></div>
+      <div class="bar">
+        <button class="primary" type="button" id="reveal">Show the answer</button>
+        <span class="hint" id="reviewNote"></span>
+      </div>
+      <div class="answer" id="answerBox" hidden></div>
+      <div class="bar" id="gradeBar" hidden>
+        <button type="button" class="again" data-grade="again">Again</button>
+        <button type="button" class="hard" data-grade="hard">Hard</button>
+        <button type="button" class="good" data-grade="good">Good</button>
+        <button type="button" class="easy" data-grade="easy">Easy</button>
+        <span class="hint" id="gradeNote"></span>
+      </div>
+    </section>
+
+    <div class="empty" id="deckEmpty">No deck yet. Paste a page and press <strong>Build cards</strong> — every answer will be a piece of the page.</div>
+  </div>
+
+  <!-- ------------------------------------------------------- tutor -->
+  <div id="panel-tutor" role="tabpanel" aria-labelledby="tab-tutor" hidden>
+    <section class="card">
+      <h2>The tutor</h2>
+      <p class="claim">It asks about a topic that is in your deck and never states the answer. After
+        <strong id="revealAfter">3</strong> attempts it points at the sentence in your notes, because that is where the answer lives.
+        It is not a general tutor: ask about something that is not in your notes and it says so.</p>
+      <label class="fld" for="subject">Which topic?</label>
+      <input type="text" id="subject" placeholder="e.g. Respiration">
+      <div class="bar">
+        <button class="primary" type="button" id="tutorStart">Start asking</button>
+        <span class="grow"></span>
+        <span class="hint" id="tutorNote"></span>
+      </div>
+      <div id="transcript"></div>
+      <label class="fld" for="tutorSay" id="sayLabel" hidden>Your answer</label>
+      <textarea id="tutorSay" rows="2" hidden placeholder="Say what you think — even &quot;I do not know&quot;."></textarea>
+      <div class="bar" id="tutorBar" hidden>
+        <button class="primary" type="button" id="tutorSend">Send</button>
+        <span class="hint" id="attemptNote"></span>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  Study keeps the deck, the schedule and the transcript on this device. No model, no key, no network: the questions come from a
+  bundled set of Socratic moves, and every card answer is a piece of the page you pasted.
+  <br>PolyForm Noncommercial 1.0.0 · (c) 2026 Dr Sohil Momin
+</footer>
+
+<script src="web-kit.js"></script>
+<script src="export-kit.js"></script>
+<script src="srs-kit.js"></script>
+<script src="study-core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
