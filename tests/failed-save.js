@@ -47,11 +47,15 @@ function build(opts) {
       removeItem: function () {}, clear: function () {}
     };
   } });
-  ["web-kit.js", "export-kit.js"].forEach(function (f) {
-    var p = path.join(PLAY, f); if (fs.existsSync(p)) w.eval(fs.readFileSync(p, "utf8"));
+  /* every script the page loads except app.js itself and the service worker, kits first: an app whose core
+   * depends on a vendored kit (srs-kit, crypto-kit) must have the kit evaluated before the core */
+  var scripts = fs.readdirSync(PLAY).filter(function (f) {
+    return /\.js$/.test(f) && f !== "app.js" && f !== "sw.js";
+  }).sort(function (a, b) {
+    var ka = /-kit\.js$/.test(a) ? 0 : 1, kb = /-kit\.js$/.test(b) ? 0 : 1;
+    return ka - kb || a.localeCompare(b);
   });
-  var core = fs.readdirSync(PLAY).filter(function (f) { return /-core\.js$/.test(f); })[0];
-  if (core) w.eval(fs.readFileSync(path.join(PLAY, core), "utf8"));
+  scripts.forEach(function (f) { w.eval(fs.readFileSync(path.join(PLAY, f), "utf8")); });
   w.eval(fs.readFileSync(path.join(PLAY, "app.js"), "utf8"));
   return { dom: dom, w: w, d: w.document, saved: saved };
 }

@@ -90,7 +90,9 @@
     var gaps = S.gapFinder(els.pageText.value);
     renderGaps(gaps);
     renderDeck();
-    setStatus(saved ? "ok" : "warn", built.says + (gaps.gaps.length ? " " + gaps.says : ""));
+    /* a failed save keeps persist()'s own warning: 'warn' with a cheerful sentence is still a cheerful
+     * sentence, and a person reads the words */
+    if (saved) setStatus("ok", built.says + (gaps.gaps.length ? " " + gaps.says : ""));
   }
 
   function renderGaps(gaps) {
