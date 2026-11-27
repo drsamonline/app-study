@@ -1,97 +1,103 @@
 <!DOCTYPE html>
 <html lang="en-IN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Study — a page of notes into active recall</title>
-<meta name="description" content="Paste a page of notes, get cards whose answers are pieces of that page, and a real SM-2 schedule that brings a card back sooner when you forget it. Plus a tutor that asks about your notes and never gives the answer.">
-<meta name="theme-color" content="#101418">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study — cards from your own pages</title>
+<meta name="description" content="Cards built from your own pages, scheduled by SM-2 with learning steps before it.">
+<meta name="theme-color" content="#f7f4ec">
 <style>
-  :root{--bg:#f6f5f2;--panel:#fff;--ink:#14181d;--muted:#5d666f;--line:#d9d6cf;--accent:#2f4a7a}
+  :root{--desk:#f7f4ec;--card:#fffef9;--ink:#22201a;--rule:#e2dbc8;--grey:#6f6a5b;--violet:#5b4b8a;--amber:#b8862f;--green:#3f6b4a;
+        --serif:Georgia,"Iowan Old Style",serif;--mono:ui-monospace,Menlo,Consolas,monospace;
+        --s0:clamp(11px,.4vw + 10px,12.5px);--s1:clamp(14px,.55vw + 12px,16.5px);--s2:clamp(18px,1.2vw + 14px,25px);
+        --display:clamp(28px,5.2vw,60px);--gut:clamp(16px,3.4vw,58px)}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif}
-  main{max-width:780px;margin:0 auto;padding:48px 20px 64px}
-  h1{font-size:34px;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px}
-  .lede{font-size:18px;color:var(--muted);margin:0 0 26px}
-  .cta{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:9px}
-  .status{margin:26px 0;padding:14px 16px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:9px;background:var(--panel);font-size:14px}
-  .status b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
-  h2{font-size:17px;margin:30px 0 8px}
-  ul{padding-left:20px}li{margin:4px 0}
-  code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:13px;background:#eeede9;padding:1px 5px;border-radius:4px}
-  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:8px}
-  th,td{text-align:left;border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top}
-  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
-  footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
-  a{color:var(--accent)}
+  body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--serif)}
+  .desk{max-width:1660px;margin:0 auto;padding:0 0 58px}
+  .bar{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:10px var(--gut);border-bottom:1px solid var(--rule);
+       font-family:var(--mono);font-size:var(--s0);letter-spacing:.15em;text-transform:uppercase;color:var(--grey)}
+  .bar b{color:var(--violet);font-weight:400}
+  .head{display:grid;gap:clamp(14px,2.2vw,36px);padding:clamp(22px,3.2vw,50px) var(--gut) clamp(14px,2vw,26px);grid-template-columns:1fr}
+  @media (min-width:960px){.head{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);align-items:end}}
+  h1{font-size:var(--display);line-height:1;margin:0;letter-spacing:-.03em;font-weight:400}
+  .head p{margin:10px 0 0;font-size:var(--s2);line-height:1.42;color:var(--grey);max-width:44ch;font-style:italic}
+  .due{border:1px solid var(--rule);background:var(--card);padding:12px 14px;font-family:var(--mono);font-size:var(--s0);color:var(--grey);line-height:1.7}
+  .due b{display:block;color:var(--violet);letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px}
+  /* the card rack: 1 -> 4 across, each card a real index card */
+  .rack{display:grid;gap:clamp(10px,1.4vw,20px);padding:0 var(--gut) clamp(16px,2vw,26px);grid-template-columns:1fr}
+  @media (min-width:620px){.rack{grid-template-columns:repeat(2,1fr)}}
+  @media (min-width:1080px){.rack{grid-template-columns:repeat(4,1fr)}}
+  .c{background:var(--card);border:1px solid var(--rule);border-top:3px solid var(--violet);padding:clamp(12px,1.5vw,18px);
+     box-shadow:0 2px 0 rgba(80,70,40,.07);display:grid;gap:6px}
+  .c.learning{border-top-color:var(--amber)}
+  .c.mature{border-top-color:var(--green)}
+  .c .q{font-size:var(--s1);line-height:1.45}
+  .c .a{font-family:var(--mono);font-size:var(--s0);color:var(--grey);border-top:1px dashed var(--rule);padding-top:6px;margin-top:2px}
+  .c .m{font-family:var(--mono);font-size:calc(var(--s0) - .5px);color:var(--violet);letter-spacing:.06em}
+  .c.learning .m{color:var(--amber)}
+  .c.mature .m{color:var(--green)}
+  .steps{margin:0 var(--gut);display:grid;gap:clamp(8px,1.2vw,16px);grid-template-columns:1fr}
+  @media (min-width:700px){.steps{grid-template-columns:repeat(4,1fr)}}
+  .step{border:1px solid var(--rule);background:var(--card);padding:10px 12px;font-family:var(--mono);font-size:var(--s0);color:var(--grey)}
+  .step b{display:block;color:var(--ink);font-family:var(--serif);font-size:var(--s1);margin-top:3px}
+  .cols{display:grid;gap:clamp(18px,2.6vw,46px);padding:clamp(18px,2.6vw,36px) var(--gut) 0;grid-template-columns:1fr}
+  @media (min-width:860px){.cols{grid-template-columns:repeat(2,1fr)}}
+  @media (min-width:1380px){.cols{grid-template-columns:repeat(3,1fr)}}
+  h2{font-family:var(--mono);font-size:var(--s0);letter-spacing:.16em;text-transform:uppercase;color:var(--violet);margin:0 0 6px}
+  p{font-size:var(--s1);line-height:1.72;margin:0 0 12px}
+  .go{display:inline-block;background:var(--violet);color:#fff;text-decoration:none;padding:12px 22px;border-radius:4px;
+      font-family:var(--mono);font-size:var(--s0);letter-spacing:.15em;text-transform:uppercase;margin-top:6px}
+  .go:hover{background:var(--ink)}
+  .sponsor{margin:clamp(22px,3vw,38px) var(--gut) 0;border:1px solid var(--rule);border-left:3px solid #c9a05a;background:var(--card);
+           border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:var(--s0);color:var(--grey);line-height:1.6}
+  .sponsor a{color:var(--violet);text-decoration:none;border-bottom:1px solid currentColor}
+  .foot{margin:14px var(--gut) 0;font-family:var(--mono);font-size:var(--s0);color:#8b8578;line-height:1.8}
+  .foot a{color:var(--violet)}
+</style></head>
+<body><div class="desk">
+  <div class="bar"><span>cards from your own pages</span><span><b>sm-2</b> · learning steps first</span></div>
 
-  .sponsor{margin:24px 0 0;padding:12px 14px;border:1px solid rgba(128,128,128,.35);border-left:3px solid #c9a05a;
-           background:rgba(128,128,128,.07);border-radius:8px;font-size:12.5px;line-height:1.6}
-  .sponsor a{color:#c9a05a;text-decoration:none;border-bottom:1px solid currentColor}
-</style>
-</head>
-<body>
-<main>
-  <h1>Study</h1>
-  <p class="lede">A page of notes into active recall. Every card's answer is a piece of the page, the schedule
-  brings back what you forgot, and the tutor asks about your notes without ever telling you the answer.</p>
-
-  <a class="cta" href="play/index.html">Open Study</a>
-
-  <div class="status">
-    <b>Status</b>
-    Built and working offline: cards built from a pasted page with every answer verbatim from it; a real SM-2
-    schedule (the estate's own <code>srs-kit</code>) where a card answered “again” returns in minutes and one
-    answered “easy” in days; a gap finder that names a term the page uses and never defines; a deck export and
-    import that keeps every review date; and a Socratic tutor that only asks about your own deck.
-    <br><b>Release</b>: Windows EXE, Android APK and Linux binary, built from this source in CI — <a href="https://github.com/drsamonline/app-study/releases/tag/app-latest">app-latest</a>.
-    <br><b>Not built</b>: reading a photograph of your notes. That needs an OCR model, and there is none in this
-    estate — so the page is pasted or typed, and the app says so instead of pretending to have read a photo.
+  <div class="head">
+    <div>
+      <h1>Study</h1>
+      <p>Cards built from what you are actually reading, scheduled so a new card is not asked again in a year.</p>
+    </div>
+    <div class="due"><b>due now</b>4 cards · 2 learning, 2 mature</div>
   </div>
 
-  <h2>What it does</h2>
-  <ul>
-    <li>Cuts the page into facts and makes a card for each — a definition (“What is Respiration?”) or a cloze.</li>
-    <li>Keeps every answer <strong>verbatim from your page</strong>: a card the app invented would be a card you cannot trust.</li>
-    <li>Schedules with SM-2: learning steps first, then the algorithm. Forget a card and it comes back within minutes.</li>
-    <li>Names the gaps: terms you use more than once and never define.</li>
-    <li>Exports the deck as JSON (or Markdown) and imports it back with the review dates intact.</li>
-    <li>Asks Socratic questions about a card in your deck, and after three attempts points at the sentence in your notes.</li>
-  </ul>
+  <div class="rack">
+    <div class="c learning"><div class="q">What did the office confirm about the tank?</div><div class="a">answer ▸ the cleaning, in a notice</div><div class="m">learning · again 10m · hard 1d</div></div>
+    <div class="c learning"><div class="q">Which clause survives a change of committee?</div><div class="a">answer ▸ the maintenance clause</div><div class="m">learning · good 1d · easy 4d</div></div>
+    <div class="c mature"><div class="q">When is the stock count?</div><div class="a">answer ▸ Friday 5pm</div><div class="m">mature · next in 21 days</div></div>
+    <div class="c mature"><div class="q">Who does aisle 1?</div><div class="a">answer ▸ Aaji, Thursday</div><div class="m">mature · next in 34 days</div></div>
+  </div>
 
-  <h2>What it will not do</h2>
-  <ul>
-    <li><strong>Read a photograph.</strong> No OCR, no camera, no vision model — the page is pasted or typed.</li>
-    <li><strong>Invent a card.</strong> If no fact can be turned into a card with an answer taken from the text, it makes none and says so.</li>
-    <li><strong>Give you the answer.</strong> The tutor's questions are checked against the card's answer before they are shown; a question that would leak it is replaced.</li>
-    <li><strong>Be a general tutor.</strong> Ask about something that is not in your notes and it refuses — one job, not two.</li>
-    <li><strong>Use a model, a key or a network.</strong> No <code>fetch</code>, no endpoint; CSP <code>connect-src 'none'</code>.</li>
-  </ul>
+  <div class="steps">
+    <div class="step">again<b>10 minutes</b></div>
+    <div class="step">hard<b>1 day</b></div>
+    <div class="step">good<b>1 day</b></div>
+    <div class="step">easy<b>4 days</b></div>
+  </div>
 
-  <h2>When things go wrong</h2>
-  <table>
-    <tr><th>Case</th><th>What happens</th></tr>
-    <tr><td>Bad input</td><td>A page with nothing readable returns “nothing readable” and no set is generated from an empty read. An empty tutor turn is refused; a subject with no stated topic is met with a question back.</td></tr>
-    <tr><td>No network</td><td>Nothing changes — cards, schedule and tutor are on the device.</td></tr>
-    <tr><td>Storage full or unavailable</td><td>The cards are generated and shown, the deck is not saved, and the app says they will vanish on reload rather than showing a set that looks saved.</td></tr>
-    <tr><td>Corrupt saved state</td><td>Reported and offered for export; a new set is never written over it without asking, and a session is never resumed from a partial transcript as if it were whole.</td></tr>
-  </table>
+  <div class="cols">
+    <div>
+      <h2>Steps before SM-2</h2>
+      <p>A brand new card gets learning steps, because raw SM-2 puts “again” and “easy” both at one day — which teaches you nothing on the first pass.</p>
+    </div>
+    <div>
+      <h2>From your pages</h2>
+      <p>Cards are made from sentences you already have, word for word, so an answer is always something you can find again rather than a paraphrase.</p>
+    </div>
+    <div>
+      <h2>Get it</h2>
+      <p>Offline, on your device, no account.</p>
+      <a class="go" href="play/index.html">open the deck →</a>
+    </div>
+  </div>
 
-  <h2>How to run it</h2>
-  <ul>
-    <li><strong>Here</strong>: <a href="play/index.html">play/index.html</a>, or install it from your browser's menu.</li>
-    <li><strong>Offline file</strong>: open <code>docs/play/index.html</code> straight from disk.</li>
-    <li><strong>Tests</strong>: <code>node tests/self-tests.js</code> — the spec's countable “done means” is asserted there.</li>
-  </ul>
-
-    <div class="sponsor">
+  <div class="sponsor">
     <strong>Sponsor this app.</strong> It is free, offline and has no account. If it earned its keep:
     <a href="https://github.com/sponsors/drsamonline">github.com/sponsors/drsamonline</a>
   </div>
-<footer>
-    PolyForm Noncommercial 1.0.0 · (c) 2026 Dr Sohil Momin ·
-    <a href="https://github.com/drsamonline/app-study">source</a>
-  </footer>
-</main>
-</body>
-</html>
+  <p class="foot">Windows · Android · Linux at <a href="https://github.com/drsamonline/app-study/releases/tag/app-latest">app-latest</a> ·
+  PolyForm Noncommercial 1.0.0 · (c) 2026 Dr Sohil Momin</p>
+</div></body></html>
