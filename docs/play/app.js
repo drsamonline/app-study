@@ -160,11 +160,11 @@
     var out = S.grade(state.current, gradeName, nowMs());
     if (!out.ok) { setStatus("bad", out.reason); return; }
     state.deck.cards = state.deck.cards.map(function (c) { return c.id === out.card.id ? out.card : c; });
-    persist();
+    var saved = persist();
     var when = new Date(out.due);
     var mins = Math.round((out.due - nowMs()) / 60000);
     var human = mins < 90 ? mins + " minute(s)" : Math.round(mins / 1440) + " day(s)";
-    setStatus("ok", "\u201c" + gradeName + "\u201d — this card comes back in " + human +
+    if (saved) setStatus("ok", "\u201c" + gradeName + "\u201d — this card comes back in " + human +
       " (" + when.toLocaleDateString("en-IN") + "). " +
       (gradeName === "again" ? "Sooner than a card you called easy: that is the schedule working." : ""));
     renderDeck();
@@ -188,10 +188,10 @@
         return;
       }
       state.deck = parsed.deck;
-      persist();
+      var saved = persist();
       renderDeck();
       var st = S.stats(state.deck, nowMs());
-      setStatus("ok", "Imported " + st.total + " card(s) with their review dates: " + st.due + " due now.");
+      if (saved) setStatus("ok", "Imported " + st.total + " card(s) with their review dates: " + st.due + " due now.");
     };
     reader.readAsText(file);
   }
